@@ -1,0 +1,70 @@
+{% sw_extends '@Storefront/storefront/component/buy-widget/configurator.html.twig' %}
+
+{% block buy_widget_configurator_options %}
+
+{% set firstOption = page.extensions.customVariants.elements|first %}
+
+{% if firstOption.optionIds|length > 1 %}
+    {{ parent() }}
+{% else %}
+    <div class="product-detail-configurator-options">
+        {% for option in page.extensions.customVariants.elements %}
+            {% set optionId = option.optionIds.0 %}
+         
+            {% if elementId is defined and elementId is not null %}
+                {% set optionIdentifier = [group.id, option.id, elementId]|join('-') %}
+            {% else %}
+                {% set optionIdentifier = [group.id, option.id]|join('-') %}
+            {% endif %}
+
+            {% set isActive = option.id in product.optionIds %}
+            {% set isCombinableCls = option.combinable ? 'is-combinable' : false %}
+            {% set media = option.cover.media ?: (option.media ?: false) %}
+            {% set displayType = option.configuratorSetting.media ? 'media' : group.displayType %}
+
+            <div class="product-detail-configurator-option w-100">
+                <input 
+                    type="radio" 
+                    name="{{ group.id }}" 
+                    value="{{ optionId }}" 
+                    class="product-detail-configurator-option-input{% if isCombinableCls %} {{ isCombinableCls }}{% endif %}" 
+                    title="{{ optionIdentifier }}" 
+                    id="{{ optionIdentifier }}" 
+                    {% if isActive %} checked="checked" {% endif %}
+                >
+                <label 
+                    class="product-detail-configurator-option-label{% if isCombinableCls %} {{ isCombinableCls }}{% endif %} is-display-{{ displayType }} w-100" 
+                    {% if displayType == 'color' and option.colorHexCode %} style="background-color: {{ option.colorHexCode }}" {% endif %} 
+                    title="{{ option.translated.name }}" 
+                    for="{{ optionIdentifier }}"  
+                    style="height:unset; opacity:1;"
+                >
+                    {% if media %}
+                        {% sw_thumbnails 'configurator-option-img-thumbnails' with {
+                            media: media,
+                            sizes: {
+                                default: '52px'
+                            },
+                            attributes: {
+                                class: 'product-detail-configurator-option-image',
+                                alt: option.translated.name,
+                                title: option.translated.name
+                            }
+                        } %}
+                    {% endif %}
+
+                    <div class="product-variant-info">
+                        <p class="product-variant-name">{{ option.name }}</p>
+                        <p class="product-variant-product-number">{{ option.productNumber }}</p>
+                        <p class="product-variant-shipping">1-3 Werktage</p>
+                    </div>
+
+                    <div class="product-detail-price-container">
+                        {% sw_include '@Storefront/storefront/component/buy-widget/buy-widget-price.html.twig' %}
+                    </div>
+                </label>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}
